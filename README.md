@@ -36,7 +36,8 @@ Usage: pecrant <command>
   resume    Resume the selected vagrant machine
   halt      Stop the selected vagrant machine
   destroy   Stop and delete all traces of the vagrant machine
-  ssh       Connect to machine via SSH
+  ssh       Open a terminal and ssh into the selected vagrant machine
+  cd        Open a terminal at the home of the selected vagrant machine
   dir       Show directory path for vagrant environments
   list      Show vagrant environments for this user
   box       Manage vagrant boxes: update, remove

@@ -35,13 +35,6 @@
         }'
     }
 
-    _pecrant_ssh() {
-        local id=$(_pecrant_selected_ids | awk 'NR == 1')
-
-        [ -z "$id" ] && _exit_with "Machine id is not specified"
-        vagrant ssh $id
-    }
-
     _pecrant_up() {
         local ids=$(_pecrant_selected_ids)
 
@@ -170,6 +163,56 @@ EOF
         fi
     }
 
+    _iterm() {
+        cmd=${*//\"/\\\"}
+        osascript <<EOF
+tell application "iTerm"
+    activate
+    try
+        tell the first terminal
+            launch session "Default Session"
+            tell the last session
+                write text "$cmd"
+            end tell
+        end tell
+    on error errmsg
+        set term to (make new terminal)
+        tell term
+            launch session "Default Session"
+            tell the last session
+                write text "$cmd"
+            end tell
+        end tell
+    end try
+end tell
+EOF
+    }
+    export -f _iterm
+
+    _pecrant_ssh() {
+        _pecrant | awk '{
+            dir = ""
+            for (i = 5 ; i < NF ; i++) {
+                dir = dir $i FS
+            }
+            dir = dir $NF
+            cmd = sprintf("cd \\\"%s\\\"; clear; vagrant ssh %s; exit", dir, $1)
+            system("_iterm" FS "\"" cmd "\"")
+        }'
+    }
+
+    _pecrant_cd() {
+        _pecrant | awk '{
+            dir = ""
+            for (i = 5 ; i < NF ; i++) {
+                dir = dir $i FS
+            }
+            dir = dir $NF
+            cmd = sprintf("cd \\\"%s\\\"; clear", dir)
+            system("_iterm" FS "\"" cmd "\"")
+        }'
+    }
+
     _pecrant_help() {
         cat <<EOF
 Usage: pecrant <command>
@@ -181,7 +224,8 @@ Usage: pecrant <command>
   resume    Resume the selected vagrant machine
   halt      Stop the selected vagrant machine
   destroy   Stop and delete all traces of the vagrant machine
-  ssh       Connect to machine via SSH
+  ssh       Open a terminal and ssh into the selected vagrant machine
+  cd        Open a terminal at the home of the selected vagrant machine
   dir       Show directory path for vagrant environments
   list      Show vagrant environments for this user
   box       Manage vagrant boxes: update, remove
