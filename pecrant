@@ -187,30 +187,39 @@ tell application "iTerm"
 end tell
 EOF
     }
-    export -f _iterm
 
     _pecrant_ssh() {
-        _pecrant | awk '{
+        local cmds=$(_pecrant | awk '{
             dir = ""
             for (i = 5 ; i < NF ; i++) {
                 dir = dir $i FS
             }
             dir = dir $NF
-            cmd = sprintf("cd \\\"%s\\\"; clear; vagrant ssh %s; exit", dir, $1)
-            system("_iterm" FS "\"" cmd "\"")
-        }'
+            printf("cd \"%s\"; clear; vagrant ssh %s; exit\n", dir, $1)
+        }')
+
+        local IFS=$'\n'
+
+        for cmd in $cmds ; do
+            IFS=" "; _iterm "$cmd"
+        done
     }
 
     _pecrant_cd() {
-        _pecrant | awk '{
+        local cmds=$(_pecrant | awk '{
             dir = ""
             for (i = 5 ; i < NF ; i++) {
                 dir = dir $i FS
             }
             dir = dir $NF
-            cmd = sprintf("cd \\\"%s\\\"; clear", dir)
-            system("_iterm" FS "\"" cmd "\"")
-        }'
+            printf("cd \"%s\"; clear\n", dir)
+        }')
+
+        local IFS=$'\n'
+
+        for cmd in $cmds ; do
+            IFS=" "; _iterm "$cmd"
+        done
     }
 
     _pecrant_help() {
